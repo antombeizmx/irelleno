@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacar informacion</title>
+    <style>
+        *
+        {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            object-fit: contain;
+            font-family: Arial, Helvetica, sans-serif;
+
+        }
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+        .contenedor
+        {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .formulario
+        {
+            display: flex;
+            flex-direction: column;
+            width: 520px;
+            height: 520px;
+            border: solid 1px #2d2d2d;
+            border-radius: 5px;
+            padding: 20px;
+            
+        }
+        #texto_tablas
+        {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border-radius: 5px;
+            border: solid 1px #2d2d2d;
+        }
+        .contenedor_acciones
+        {
+            display: flex;
+            width: 100%;
+            height: 100px;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+        }
+        .boton
+        {
+            display: flex;
+            height: 80%;
+            padding: 10px;
+            padding-left: 20px;
+            padding-right: 20px;
+            justify-content: center;
+            align-items: center;
+            border: solid 1px #2d2d2d;
+            border-radius: 5px;
+            font-size: 15px;
+            text-decoration: none;
+        }
+        #input_nombre_anime
+        {
+            width: 100%;
+            height: 30px;
+            font-size: 15px;
+            border-radius: 5px;
+            border: solid 1px #2d2d2d;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="contenedor">
+    <div class="formulario">
+        <input type="text" placeholder="Nombre del anime" id="input_nombre_anime">
+        <textarea id="texto_tablas" cols="30" rows="10"></textarea>
+        <div class="contenedor_acciones">
+            <button class="boton" onclick="limpiar();">Limpiar</button>
+            <button class="boton" onclick="copiar();">Copiar</button>
+            <button class="boton" onclick="extraer();">Extraer</button>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script>
+function extraer()
+{
+    let nombre_input= document.getElementById("input_nombre_anime")
+    let datos= document.getElementById("texto_tablas").value
+    let sin_saltos= datos.trim()
+    sin_saltos = sin_saltos.replace(/(\r\n|\n|\r)/gm, "")
+    let sin_clases = sin_saltos.replace(/class="[\w\s-_]*"/gm,"")
+    let sin_span = sin_clases.replace(/<[spani][\s\w="-:;]*>*/gm,"")
+    let sin_span_final = sin_span.replace(/<[</][spani][\s\w="-:;]*>*/gm,"")
+    let sin_estilos = sin_span_final.replace(/style=["\w:;\s]*/gm,"")
+    let quitar_cosas = sin_estilos.replace(/<!---->/gm,"")
+    let quitar_th=quitar_cosas.replace(/<th\s/gm,"<td")
+    let quitar_th_abajo = quitar_th.replace(/<[/]th>/gm,"</td>")
+    let quitar_div = quitar_th_abajo.replace(/<div[\s\w="-:;]*>*/gm,"")
+    let quitar_div_abajo = quitar_th_abajo.replace(/<[/]div[\s\w="-:;]*>*/gm,"")
+    quitar_div = quitar_div_abajo.replace(/<div >/gm,"")
+    let quitar_theads=quitar_div.replace(/<thead[\s\w="-:;]*>*/gm,"")
+    quitar_theads=quitar_theads.replace(/<[/]thead[\s\w="-:;]*>*/gm,"")
+    let quitar_tbodies=quitar_theads.replace(/<tbody[\s\w="-:;]*>*/gm,"")
+    quitar_tbodies=quitar_tbodies.replace(/<[/]tbody[\s\w="-:;]*>*/gm,"")
+    let agregar_filas = quitar_tbodies.replace(/<[/]tr>/gm,"/---/")
+    let agregar_columnas = agregar_filas.replace(/<[/]td[\s\w-="]*>/gm,"%____%")
+    let quitar_etiquetas=agregar_columnas.replace(/<[\w\s="-.]*>/gm,"")
+    quitar_etiquetas=quitar_etiquetas.replace(/<[/][\w\s-="]*>/gm,"")
+    let quitar_titulos =quitar_etiquetas.replace(/<td[\s\w-="í]*>/gm,"")
+    let cadena_final=quitar_titulos.replace(/\s{2}/gm,"")
+
+    console.log(cadena_final)
+    let total_filas = cadena_final.split("/---/")
+    for(let a =1;a<total_filas.length;a++)
+    {
+        let datos_anime = total_filas[a].split("%____%")
+        // console.log("numero: "+datos_anime.length)
+        if(datos_anime.length==6)
+        {
+            let nombre_final=nombre_input.value.trim()
+            let nombre_anime =nombre_final
+            let numero_capitulo=datos_anime[0]
+            let nombre_captitulo=datos_anime[2]
+            let clave_capitulo=datos_anime[1]
+            let tipo_capitulo=datos_anime[4]
+
+            let peticion = $.ajax({
+                url:"../controlador/registrarDatos.php",
+                method:"post",
+                data:{
+                    nombre_anime:nombre_anime,
+                    numero_capitulo:numero_capitulo,
+                    nombre_captitulo:nombre_captitulo,
+                    clave_capitulo:clave_capitulo,
+                    tipo_capitulo:tipo_capitulo
+                },
+                dataType:"text"
+            })
+            peticion.done(function(respuesta){
+                console.log(respuesta+"numero: "+a)
+            })   
+        }
+    }
+}
+
+function limpiar()
+{
+    let input= document.getElementById("texto_tablas")
+    input.value= ""
+}
+
+function copiar()
+{
+    let input= document.getElementById("texto_tablas")
+    input.select()
+    document.execCommand("copy")
+}
+
+
+</script>
+</body>
+</html>

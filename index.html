@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es-Mx">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iRelleno</title>
+    <style>
+        *
+        {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+        .contenedor_principal
+        {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+        }
+        #menu
+        {
+            display: flex;
+            width: 100%;
+            height: 15%;
+            padding: 20px;
+            border-bottom: solid 1px #2d2d2d;
+            justify-content: flex-start ;
+        }
+        #input_busqueda
+        {
+            width: 300px;
+            height: 50px;
+            border: solid 1px #2d2d2d;
+            border-radius: 5px;
+            font-size: 18px;
+            padding: 10px;
+            margin-left: 10px;
+        }
+        #select_tipo
+        {
+            width: 200px;
+            height: 50px;
+            border: solid 1px #2d2d2d;
+            border-radius: 5px;
+            font-size: 18px;
+            padding: 10px;
+            margin-left: 10px;
+        }
+        #input_busqueda:focus
+        {
+            outline:none;
+        }
+        #select_tipo:focus
+        {
+            outline:none;
+        }
+        #conteneddor_info
+        {
+            display: flex;
+            width: 100%;
+            height: 85%;
+            justify-content: center;
+            align-items: center;
+            background-color: #2d2d2d;
+        }
+        .visualizar_datos
+        {
+            display: flex;
+            width: 600px;
+            height: 250px;
+            box-shadow: -4px 4px 14px 0px rgba(0,0,0,0.75);
+            border-radius: 5px;
+            overflow: hidden;
+            background: #FFF;
+        }
+        .numero_texto
+        {
+            display: flex;
+            width: 20%;
+            height: 100%;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+        }
+        .color_relleno
+        {
+            background-color:  #FF0000 ;
+            color: #FFF;
+        }
+        .color_mixto
+        {
+            background-color:  #CCCC00 ;
+            color: black;
+        }
+        .color_cannon
+        {
+            background-color: #00FF00;
+            color: #FFF;
+        }
+        .contenedor_datos
+        {
+            display: flex;
+            width: 80%;
+            height: 100% ;
+            flex-direction: column;
+        }
+        .titulo_dato
+        {
+            width: 100%;
+            height: auto;
+            padding: 10px;
+            font-size: 20px;
+        }
+        .titulo_dato_error
+        {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            font-size: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+        .texto_datos
+        {
+            width: 100%;
+            height: auto;
+            padding: 10px;
+            font-size: 15px;
+        }
+        .boton
+        {
+            display: flex;
+            cursor: pointer;
+            width: 200px;
+            height: 50px;
+            border: solid 1px #2d2d2d;
+            border-radius: 5px;
+            font-size: 18px;
+            padding: 10px;
+            margin-left: 10px;
+            background-color: #FFF;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @media screen and (max-width:987px) {
+                #buscar_peticion
+                {
+                    display: none;
+                } 
+        }
+        @media screen and (max-width:622px) {
+                #conteneddor_info
+                {
+                    padding-top: 20px;
+                    align-items: flex-start;
+                }
+                .visualizar_datos
+                {
+                    width: 90%;
+                }
+                #menu
+                {
+                    align-items: center;
+                    flex-direction: column;
+                    height: auto;
+                }
+                .input
+                {
+                    width: 90%;
+                    margin: 10px;
+                    height: 35px;
+                    font-size: 15px;
+                }
+                #input_busqueda
+                {
+                    height: 35px;
+                }
+                #select_tipo
+                {
+                    width: 90%;
+                    height: 35px;
+                    padding: 5px;
+                }
+          
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="contenedor_principal">
+        <div id="menu">
+            <input class="input" type="text" id="input_busqueda" onkeypress="enter(event)" placeholder="Número o nombre de episodio">
+            <select id="select_tipo" class="input">
+                <option value="Anime">Nombre Anime</option>
+            </select>
+            <button class="boton input" onclick="buscar();">Buscar</button>
+            <button class="boton input" id="buscar_peticion" style="position: absolute;right: 20px;">Crear petición</button>
+        </div>
+        <div id="conteneddor_info"></div>
+    </div>
+    <script src="sources/js/jquery.js"></script>
+    <script>
+        let input_busqueda = document.getElementById("input_busqueda")
+        let select_busqueda = document.getElementById("select_tipo")
+
+        function buscar()
+        {
+            let valor_busqueda = input_busqueda.value.trim()
+            let valor_select = select_busqueda.value
+            console.log("valor busqueda: "+valor_busqueda)
+            console.log("valor select: "+valor_select)
+            let peticion = $.ajax({
+                url:"controlador/consultar_capitulo.php",
+                method:"post",
+                data:{
+                    capitulo:valor_busqueda,
+                    anime:valor_select,
+                    numero:valor_busqueda
+                },
+                dataType:"json"
+            })
+            peticion.done(function(respuesta){
+                console.log(respuesta)
+                let nombre = respuesta
+                let numero_respuesta = nombre.length
+                let contenedor = document.getElementById("conteneddor_info")
+                contenedor.innerHTML=""
+                if(respuesta =="no hay coincidencias")
+                {
+                    let cadena = '<div class="visualizar_datos"><p class="numero_texto color_relleno">404</p><div class="contenedor_datos"><p class="titulo_dato_error">No hay coincidencias</p></div></div>'
+                    contenedor.innerHTML=cadena
+                }
+                else
+                {
+                    for(let a= 0;a<numero_respuesta;a++)
+                    {
+                        if(nombre[a].tipo_capitulo=="CANON")
+                        {
+                            let cadena = '<div class="visualizar_datos"><p class="numero_texto color_cannon">'+nombre[a].numero_capitulo+'</p><div class="contenedor_datos"><p class="titulo_dato">'+nombre[a].nombre_captitulo+'</p><p class="texto_datos">'+nombre[a].clave_capitulo+'</p><p class="texto_datos">'+nombre[a].tipo_capitulo+'</p></div></div>'
+                            contenedor.innerHTML=cadena
+                        }
+                        if(nombre[a].tipo_capitulo=="RELLENO")
+                        {
+                            let cadena = '<div class="visualizar_datos"><p class="numero_texto color_relleno">'+nombre[a].numero_capitulo+'</p><div class="contenedor_datos"><p class="titulo_dato">'+nombre[a].nombre_captitulo+'</p><p class="texto_datos">'+nombre[a].clave_capitulo+'</p><p class="texto_datos">'+nombre[a].tipo_capitulo+'</p></div></div>'
+                            contenedor.innerHTML=cadena
+                        }
+                        if(nombre[a].tipo_capitulo=="MIXTO")
+                        {
+                            let cadena = '<div class="visualizar_datos"><p class="numero_texto color_mixto">'+nombre[a].numero_capitulo+'</p><div class="contenedor_datos"><p class="titulo_dato">'+nombre[a].nombre_captitulo+'</p><p class="texto_datos">'+nombre[a].clave_capitulo+'</p><p class="texto_datos">'+nombre[a].tipo_capitulo+'</p></div></div>'
+                            contenedor.innerHTML=cadena
+                        }
+                    }
+                }
+
+            })
+        }
+
+
+
+        function agregar_nombres()
+        {
+            let valor_busqueda = input_busqueda.value.trim()
+            let valor_select = select_busqueda.value
+            let peticion = $.ajax({
+                url:"controlador/consultar_nombre_animes.php",
+                method:"post",
+                dataType:"json"
+            })
+            peticion.done(function(respuesta){
+                let numero = respuesta.length
+                select_busqueda.innerHTML=""
+                
+                    if(respuesta=="no hay coincidencias")
+                    {
+                        let elemento = '<option value="">No hay opciones</option>'
+                        select_busqueda.innerHTML+=elemento
+                    }
+                    else
+                    {
+                        for(let a = 0; a<numero;a++)
+                        {
+                        let nombre = respuesta[a].nombre_anime
+                    // console.log(nombre)
+                        let elemento = '<option value="'+nombre+'">'+nombre+'</option>'
+                        select_busqueda.innerHTML+=elemento
+                         }
+                   
+                    }
+                // console.log(respuesta)
+            }) 
+        }
+        function enter(event) {
+            var keycode = event.keyCode;
+            if(keycode == '13'){
+                buscar()
+            }
+        }
+
+        window.onload= function()
+        {
+            agregar_nombres()
+        }
+    </script>
+</body>
+</html>
